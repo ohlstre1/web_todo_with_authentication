@@ -1,0 +1,29 @@
+services:
+  api:
+    build: api
+    restart: unless-stopped
+    volumes:
+      - ./api:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - database
+    env_file:
+      - project.env
+
+  database:
+    container_name: postgresql_database
+    image: postgres:16.1
+    restart: unless-stopped
+    env_file:
+      - project.env
+  
+  database-migrations:
+    image: flyway/flyway:10.0.0-alpine
+    env_file:
+      - project.env
+    depends_on:
+      - database
+    volumes:
+      - ./flyway/sql:/flyway/sql
+    command: -connectRetries=60 -baselineOnMigrate=true migrate
